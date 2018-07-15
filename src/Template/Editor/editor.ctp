@@ -56,9 +56,9 @@
 			  	<input type="text" id="editor-modal-control-input" class="form-control" autocomplete="off">
 		  	</div>
 
-		  	<div id="editor-modal-group-control-lines" class="form-group">
+		  	<div id="editor-modal-group-control-qtd" class="form-group">
 			  	<label>Quantidade</label>
-			  	<input type="text" id="editor-modal-control-lines" class="form-control" autocomplete="off">
+			  	<input type="text" id="editor-modal-control-qtd" class="form-control" autocomplete="off">
 		  	</div>
 			<div id="editor-modal-group-control-list"></div>
 		  	<div id="editor-modal-group-control-list-type" class="form-group" autocomplete="off">

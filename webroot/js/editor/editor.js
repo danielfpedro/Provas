@@ -14,6 +14,27 @@ $(function() {
 
 	$('.editor-tools ul').not('.current').hide();
 
+	$('.editor-canvas').on('click', '.editor-edit-component', function(e) {
+		console.log('Pimba');
+		e.stopPropagation();
+		var $this = $(this);
+
+		currentAction.element = $this;
+		currentAction.type = $this.data('action');
+		currentAction.editing = true;
+
+		switch(currentAction.type) {
+			case 'addText':
+				$('#editor-modal-control-textarea').val($this.text());
+			case 'addInput':
+				$('#editor-modal-control-input').val($this.text());
+				break;
+		}
+
+		openModalTextEdit();
+
+	});
+
 	$('.editor-canvas').on('click', '.editor-block, .editor-row, .editor-col', function(e) {
 		var $this = $(this);
 
@@ -41,93 +62,32 @@ $(function() {
 		e.stopPropagation();
 	});
 
-	// $('.editor-canvas').on('mouseenter', '.editor-block', function(e) {
-	// 	$(this).addClass('editor-mouseover');
-	// 	// $(this).parents('').removeClass('editor-mouseover');
-		
-	// });
-	// $('.editor-canvas').on('mouseleave', '.editor-block', function(e) {
-	// 	$(this).removeClass('editor-mouseover');
-	// 	// $(this).parents('[class^=editor-]').addClass('editor-mouseover');
-	// });
-
-	// $('.editor-canvas').on('mouseenter', '.editor-row', function(e) {
-	// 	$(this).addClass('editor-mouseover');
-	// 	$(this).parents('.editor-block').removeClass('editor-mouseover');
-		
-	// });
-	// $('.editor-canvas').on('mouseleave', '.editor-row', function(e) {
-	// 	$(this).removeClass('editor-mouseover');
-	// 	$(this).parents('.editor-block').addClass('editor-mouseover');
-	// });
-
-	// $('.editor-canvas').on('mouseenter', '.editor-col', function(e) {
-	// 	$(this).addClass('editor-mouseover');
-	// 	$(this).parents('.editor-row').removeClass('editor-mouseover');
-		
-	// });
-	// $('.editor-canvas').on('mouseleave', '.editor-col', function(e) {
-	// 	$(this).removeClass('editor-mouseover');
-	// 	$(this).parents('.editor-row').addClass('editor-mouseover');
-	// });
-
-	// $(document).on('click', '.editor-add-parent', function() {
-	// 	var $this = $(this);
-
-	// 	switch($this.data('action')) {
-	// 		case 'addBlock':
-	// 			$('.editor-canvas').append(getBlockHtml());
-	// 			break;
-	// 		case 'addRow':
-	// 			console.log('Aqui', currentAction);
-	// 			currentAction.element.append(getRowHtml());
-	// 			break;
-	// 	}
-	// });
-
-	// Jeito antigo por dropdown no container, não apagar até certeza que vai fazer do jeito novo
-	// 
-	// $('.editor-canvas').on('click', '.editor-add', function() {
-	// 	console.log('Clico no Adicionar interna');
-	// 	var $this = $(this);
-
-	// 	// The container of the block content
-	// 	if ($this.data('action') == 'addCol') {
-	// 		$parent = $this.parents('.editor-block');
-	// 	} else {
-	// 		$parent = getParent($this);
-	// 	}
-
-	// 	currentAction = {
-	// 		type: $this.data('action'),
-	// 		element: $parent
-	// 	};
-	// 	openModalTextEdit();
-	// });
-
 	$('.editor-canvas').on('click', '.editor-col', function(e) {
 		var $this = $(this);
 
 		currentAction = {
 			element: $this,
 		};
-		console.log('Container do momento', currentAction);
+		console.log('Click Col');
 		e.stopPropagation();
 	});
-	$('.editor-canvas').on('click', '.editor-row', function() {
+	$('.editor-canvas').on('click', '.editor-row', function(e) {
 		var $this = $(this);
 
 		currentAction = {
 			element: $this,
 		};
-		console.log('Container do momento', currentAction);
+		console.log('Click Row');
+		e.stopPropagation();
 	});
 
 	$('.editor-tools').on('click', '.editor-add', function() {
 		var $this = $(this);
 
 		currentAction.type = $this.data('action');
+		currentAction.editing = false;
 
+		$('#editor-modal-form')[0].reset();
 		switch(currentAction.type) {
 			case 'addBlock':
 				$('.editor-canvas').append(getBlockHtml());
@@ -147,32 +107,32 @@ $(function() {
 	});
 
 	function modalControlsVisibility(show) {
-		return;
 		console.log('Controler do Modal para mostrar', show);
 		$('[id^=editor-modal-group-control]').hide();
 	
 		for (var i = 0; i < show.length; i++) {
-			$('#editor-modal-group-control-' + show[i]).fadeIn('fast', function() {
-				if (i == 1) {
-					$(this).find('input, textarea').focus();	
-				}
-				if (show[i] == 'list') {
-			    	var $control = $(getControlListHtml());
-			        $('#editor-modal-group-control-list').append($control);
-			        $control.focus();
-				}
-			});
+			$('#editor-modal-group-control-' + show[i]).show()
+			if (i == 1) {
+				$(this).find('input, textarea').focus();	
+			}
+			console.log('Pim', show[i]);
+			if (show[i] == 'list') {
+				console.log('Aqui');
+		    	var $control = $(getControlListHtml());
+		        $('#editor-modal-group-control-list').append($control);
+		        $control.focus();
+			}
 		}
 	}
 
 	function openModalTextEdit() {
-		console.log('Action type', currentAction);
+		console.log('Open modal Action type', currentAction);
 		switch (currentAction.type){
 			case 'addText':
 				modalControlsVisibility(['textarea']);
 				break;
 			case 'addInput':
-				modalControlsVisibility(['input', 'lines']);
+				modalControlsVisibility(['input', 'qtd']);
 				break;
 			case 'addLines':
 				modalControlsVisibility(['lines']);
@@ -202,11 +162,24 @@ $(function() {
 
 		switch(currentAction.type) {
 			case 'addText':
-				currentAction.element.append('<p>' +$('#editor-modal-control-textarea').val()+ '</p>');
+				var value = $('#editor-modal-control-textarea').val();
+				if (!currentAction.editing) {
+					currentAction.element.append('<p class="editor-edit-component" data-action="addText">' +value+ '</p>');
+				} else {
+					currentAction.element.text(value);
+				}
+				
 				break;
 			case 'addInput':
-				currentAction.element.append(getInputHtml($('#editor-modal-control-input').val()));
-				currentAction.element.append(getLinesHtml($('#editor-modal-control-lines').val()));
+				var value = $('#editor-modal-control-input').val();
+				var valueQtd = $('#editor-modal-control-qtd').val();
+
+				if (!currentAction.editing) {
+					currentAction.element.append(getInputHtml(value));
+					currentAction.element.append(getLinesHtml(valueQtd));
+				} else {
+					currentAction.element.text(value);
+				}
 				break;
 			case 'addLines':
 				currentAction.element.append(getLinesHtml($('#editor-modal-control-lines').val()));
@@ -228,7 +201,7 @@ $(function() {
 				console.error('Ação não reconhecida', currentAction.type);
 				break;
 		}
-		$('#editor-modal-form')[0].reset();
+		
 		$('#editor-modal-group-control-list').html('');
 		$('#modal-tools').modal('toggle');
 	}
@@ -283,7 +256,7 @@ $(function() {
 	function getInputHtml(value) {
 		return `
 			<div>
-				<h6>${value}</h6>
+				<h6 class="editor-edit-component" data-action="addInput">${value}</h6>
 			</div>
 		`;
 	}
@@ -340,7 +313,9 @@ $(function() {
 
 	function getControlListHtml() {
 		return `
-			<input type="text" name="editor-control-list[]" class="editor-control-list" placeholder="Adicionar e apertar enter para adicionar mais" autocomplete="off">
+			<div class="form-group">
+				<input type="text" autocomplete="off" name="editor-control-list[]" class="form-control editor-control-list" placeholder="Adicionar e apertar enter para adicionar mais">
+			</div>
 		`;		
 	}
 
