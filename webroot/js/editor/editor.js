@@ -14,34 +14,96 @@ $(function() {
 
 	$('.editor-tools ul').not('.current').hide();
 
-	$('.editor-canvas').on('click', '.editor-edit-component', function(e) {
-		console.log('Pimba');
-		e.stopPropagation();
+	$('.editor-canvas').on('click', '.editor-component', function(e) {
+		
 		var $this = $(this);
 
 		currentAction.element = $this;
-		currentAction.type = $this.data('action');
-		currentAction.editing = true;
 
-		switch(currentAction.type) {
-			case 'addText':
-				$('#editor-modal-control-textarea').val($this.text());
-			case 'addInput':
-				$('#editor-modal-control-input').val($this.text());
-				break;
-		}
+		
+		clearInspector();
+		setInspectorTitle($this);
+		montaControls($this.data('controls'));
+		
+		// currentAction.type = $this.data('action');
+		// currentAction.editing = true;
 
-		openModalTextEdit();
+		// switch(currentAction.type) {
+		// 	case 'addText':
+		// 		$('#editor-modal-control-textarea').val($this.text());
+		// 	case 'addInput':
+		// 		$('#editor-modal-control-input').val($this.text());
+		// 		break;
+		// }
 
+		// openModalTextEdit();
+		e.stopPropagation();
 	});
 
-	$('.editor-canvas').on('click', '.editor-block, .editor-row, .editor-col', function(e) {
+	function setInspectorTitle($this) {
+		var title = [];
+
+		title.push(currentAction.element.attr('title'));
+
+		$this.parentsUntil('.editor-canvas').each(function(t) {
+			console.log('$(this)', $(this).prop('tagName'));
+			console.log('Title', $(this).attr('title'));
+			if ($(this).attr('title')) {
+				title.push($(this).attr('title'));
+			}
+			
+		});
+
+		$('.editor-inspector').append("<h3>"+title.reverse().join(' > ')+"</h3>");
+	}
+
+	$('.editor-inspector').on('keyup', '.editor-inspector-control-text', function(e) {
+		currentAction.element.text($(this).val());
+	});
+
+	function getControlTextHtml(value) {
+		var id = getRandomId();
+		return `
+			<div class="form-group">
+				<label for="${id}">Texto</label>
+				<textarea id="${id}" class="form-control editor-inspector-control editor-inspector-control-text">${value}</textarea>
+			</div>
+		`;
+	}
+
+
+	// $('.editor-canvas').on('click', '.editor-edit-component', function(e) {
+	// 	console.log('Pimba');
+	// 	e.stopPropagation();
+	// 	var $this = $(this);
+
+	// 	currentAction.element = $this;
+	// 	currentAction.type = $this.data('action');
+	// 	currentAction.editing = true;
+
+	// 	switch(currentAction.type) {
+	// 		case 'addText':
+	// 			$('#editor-modal-control-textarea').val($this.text());
+	// 		case 'addInput':
+	// 			$('#editor-modal-control-input').val($this.text());
+	// 			break;
+	// 	}
+
+	// 	openModalTextEdit();
+
+	// });
+
+	$('.editor-canvas').on('click', '.editor.canvas, .editor-block, .editor-row, .editor-col', function(e) {
+		// console.log('Has class?', $(this).hasClass('.editor-,component'));
+		// clearInspector();
+	});
+
+	$('.editor-canvas').on('click', '.editor-block, .editor-row, .editor-col, .editor-component', function(e) {
 		var $this = $(this);
 
 		currentAction.element = $this;
 
-		$('.editor-canvas div').removeClass('editor-mouseover');
-		$this.addClass('editor-mouseover');
+		setSelected($this);
 
 		var currentClass = '';
 		if ($this.hasClass('editor-block')) {
@@ -62,6 +124,18 @@ $(function() {
 		e.stopPropagation();
 	});
 
+
+	function setSelected($this)
+	{
+		$('.editor-canvas div, .editor-canvas p').removeClass('editor-mouseover');
+		$this.addClass('editor-mouseover');
+	}
+
+	$('.editor-inspector').on('click', '.editor-inspector-control-btn-delete', function(e) {
+		console.log('Deletar');
+		currentAction.element.remove();
+		clearInspector();
+	});
 	$('.editor-canvas').on('click', '.editor-col', function(e) {
 		var $this = $(this);
 
@@ -88,6 +162,50 @@ $(function() {
 		currentAction.editing = false;
 
 		$('#editor-modal-form')[0].reset();
+
+
+		switch(currentAction.type) {
+			case 'addText':
+				var $element = $(getTextHtml('Inserir o texto aqui!'));
+				currentAction.element.append($element);
+				currentAction.element = $element;
+				clearInspector();
+				setInspectorTitle(currentAction.element);
+				montaControls(currentAction.element.data('controls'));
+				setSelected(currentAction.element);
+				break;
+			case 'addInput':
+				var value = $('#editor-modal-control-input').val();
+				var valueQtd = $('#editor-modal-control-qtd').val();
+
+				if (!currentAction.editing) {
+					currentAction.element.append(getInputHtml(value));
+					currentAction.element.append(getLinesHtml(valueQtd));
+				} else {
+					currentAction.element.text(value);
+				}
+				break;
+			case 'addLines':
+				currentAction.element.append(getLinesHtml($('#editor-modal-control-lines').val()));
+				break;
+			case 'addList':
+				currentAction.element.append(getListHtml($('input[name^=editor-control-list]').serializeArray(), $('#editor-modal-control-list-type').val()));
+				break;
+			case 'addDescription':
+				currentAction.element.append(getDescriptionHtml($('#editor-modal-control-input').val()));
+				break;
+			case 'addCol':
+				var totalColsToAdd = $('#editor-modal-control-lines').val();
+				for (var i = 0; i < totalColsToAdd; i++) {
+					console.log("Adicionando Coluna");
+					currentAction.element.append(getColHtml());
+				}
+				break;
+			default:
+				console.error('Ação não reconhecida', currentAction.type);
+				break;
+		}
+
 		switch(currentAction.type) {
 			case 'addBlock':
 				$('.editor-canvas').append(getBlockHtml());
@@ -100,7 +218,7 @@ $(function() {
 				currentAction.element.append(getColHtml());
 				break;
 			default:
-				openModalTextEdit();
+				// openModalTextEdit();
 				break;
 		}
 		
@@ -208,7 +326,7 @@ $(function() {
 
 	function getBlockHtml() {
 		return `
-			<div class="editor-block editor-parent row">
+			<div class="editor-block editor-parent row" title="Block">
 				<div class="col">
 					<div class="editor-toolbox" style="display: none;">
 						<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Adicionar ao bloco</button>
@@ -224,7 +342,7 @@ $(function() {
 
 	function getRowHtml() {
 		return `
-			<div class="editor-row row">
+			<div class="editor-row row editor-component" data-controls="delete" title="Linha">
 				<button type="button" class="btn btn-default dropdown-toggle" style="display: none;" data-toggle="dropdown">Adicionar a linha</button>
 				<div class="dropdown-menu">
 					<a href="#" class="editor-add dropdown-item" data-action="addCol">Coluna</a>
@@ -236,7 +354,7 @@ $(function() {
 
 	function getColHtml() {
 		return `
-			<div class="editor-col col">
+			<div class="editor-col col editor-component" data-controls="delete" title="Coluna">
 				<button type="button" class="dropdown-toggle btn btn-primary" style="display: none;" data-toggle="dropdown">Adicionar a coluna</button>
 				<div class="dropdown-menu hidden">
 					<a href="#!" class="editor-add dropdown-item" data-action="addText">Texto</a>
@@ -249,8 +367,42 @@ $(function() {
 		`;
 	}
 
+	function montaControls(controlsString){
+		var controls = controlsString.split(',');
+		var controlsHtml = '';
+		for (var i = 0; i < controls.length; i++) {
+			switch(controls[i]) {
+				case 'text':
+					var $textControl = getControlTextHtml(currentAction.element.text());
+					controlsHtml += $textControl;
+					break;
+				case 'delete':
+					controlsHtml += getControlDeleteHtml();
+					break;
+				default:
+					console.error('Control não recohecido');
+					break;
+			}
+		}
+
+		$('.editor-inspector').append(controlsHtml);
+		$('.editor-inspector').find('input, textarea').focus();
+	}
+
+	function getControlDeleteHtml() {
+		return `
+			<button type="button" class="btn btn-danger editor-inspector-control-btn-delete">Deletar</button>
+		`;
+	}
+
 	function generateRandonId() {
 		return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(2, 10);
+	}
+
+	function getTextHtml(value) {
+		return `
+			<p title="Texto" id="${getRandomId()}" class="editor-component" data-controls="text,delete" autofocus="true">${value}</p>
+		`;
 	}
 
 	function getInputHtml(value) {
@@ -328,5 +480,9 @@ $(function() {
 	        $control.focus();
 	    }
 	});
+
+	function clearInspector() {
+		$('.editor-inspector').html('');
+	}
 
 });

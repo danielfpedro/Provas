@@ -5,13 +5,7 @@
 
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-8 editor-canvas">
-			<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Adicionar ao projeto</button>
-			<div class='dropdown-menu'>
-				<a href="#" class="editor-add-parent dropdown-item" data-action="addBlock">Bloco</a>
-			</div>
-		</div>
-		<div class="col-4 editor-tools">
+		<div class="col-3 editor-tools">
 			<ul class="nav flex-column editor-tools-block current">
 				<li class="nav-item">
 					<a href="#!" class="editor-add nav-link" data-action="addRow">Row</a>
@@ -31,6 +25,14 @@
 					<a href="#!" class="editor-add nav-link" data-action="addDescription">Observação</a>
 				</li>
 			</ul>
+		</div>
+		<div class="col-6 editor-canvas">
+			<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Adicionar ao projeto</button>
+			<div class='dropdown-menu'>
+				<a href="#" class="editor-add-parent dropdown-item" data-action="addBlock">Bloco</a>
+			</div>
+		</div>
+		<div class="col-3 editor-inspector">
 		</div>
 	</div>
 </div>
