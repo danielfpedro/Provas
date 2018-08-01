@@ -1,7 +1,6 @@
 .editor-canvas {
 	/*width: 800px;*/
 	min-height: 600px;
-	border: 1px solid red;
 }
 .editor-text {
 	border: 1px solid green;
@@ -24,8 +23,8 @@
 	top: 0;
 	z-index: 99
 }
-.editor-block, .editor-row, .editor-col {
-	padding: 20px;
+.editor-block, .editor-col {
+	padding: 15px;
 }
 .editor-block {
 	background-color: #efefef;
@@ -34,9 +33,12 @@
 	background-color: #f7f7f7;
 }
 .editor-col {
-	min-height: 150px;
+	min-height: 40px;
 	background-color: #FFF;
-	margin: 10px;
+	margin-right: 10px;
+}
+.editor-col:last-child {
+	margin-right: 0;
 }
 .editor-mouseover {
 	outline: 1px solid red;

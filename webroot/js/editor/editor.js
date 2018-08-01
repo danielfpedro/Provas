@@ -1,55 +1,65 @@
 $(function() {
 
 	// Adiciono o primeiro bloc assim que a pagina carrega
-	$('.editor-canvas').append(getBlockHtml());
-
 
 	// $('.modal').modal();
 	// $('.editor-canvas').sortable();
 
 	var $currentText = null;
 	var currentAction = {type: null, element: null};
+	init();
 
+	function init() {
+		$('.editor-add').addClass('disabled');
+
+		addBlock();
+		$('[data-toggle="tooltip"]').tooltip();
+	}
 	// $('select').formSelect();
 
-	$('.editor-tools ul').not('.current').hide();
+	// $('.editor-tools ul').not('.current').hide();
 
-	$('.editor-canvas').on('click', '.editor-component', function(e) {
+	// $('.editor-canvas').on('click', '.editor-component', function(e) {
 		
-		var $this = $(this);
+	// 	var $this = $(this);
 
-		currentAction.element = $this;
+	// 	currentAction.element = $this;
 
 		
-		clearInspector();
-		setInspectorTitle($this);
-		montaControls($this.data('controls'));
+	// 	clearInspector();
+	// 	setInspectorTitle($this);
+	// 	montaControls($this.data('controls'));
 		
-		// currentAction.type = $this.data('action');
-		// currentAction.editing = true;
+	// 	// currentAction.type = $this.data('action');
+	// 	// currentAction.editing = true;
 
-		// switch(currentAction.type) {
-		// 	case 'addText':
-		// 		$('#editor-modal-control-textarea').val($this.text());
-		// 	case 'addInput':
-		// 		$('#editor-modal-control-input').val($this.text());
-		// 		break;
-		// }
+	// 	// switch(currentAction.type) {
+	// 	// 	case 'addText':
+	// 	// 		$('#editor-modal-control-textarea').val($this.text());
+	// 	// 	case 'addInput':
+	// 	// 		$('#editor-modal-control-input').val($this.text());
+	// 	// 		break;
+	// 	// }
 
-		// openModalTextEdit();
-		e.stopPropagation();
-	});
+	// 	// openModalTextEdit();
+	// 	e.stopPropagation();
+	// });
+
+	function addBlock()
+	{
+		$('.editor-canvas').append(getBlockHtml());
+	}
 
 	function setInspectorTitle($this) {
 		var title = [];
 
-		title.push(currentAction.element.attr('title'));
+		title.push(currentAction.element.attr('data-original-title'));
 
 		$this.parentsUntil('.editor-canvas').each(function(t) {
 			console.log('$(this)', $(this).prop('tagName'));
-			console.log('Title', $(this).attr('title'));
-			if ($(this).attr('title')) {
-				title.push($(this).attr('title'));
+			console.log('Title', $(this).attr('data-original-title'));
+			if ($(this).attr('data-original-title')) {
+				title.push($(this).attr('data-original-title'));
 			}
 			
 		});
@@ -93,78 +103,134 @@ $(function() {
 
 	// });
 
-	$('.editor-canvas').on('click', '.editor.canvas, .editor-block, .editor-row, .editor-col', function(e) {
-		// console.log('Has class?', $(this).hasClass('.editor-,component'));
-		// clearInspector();
-	});
 
-	$('.editor-canvas').on('click', '.editor-block, .editor-row, .editor-col, .editor-component', function(e) {
+	$('body').on('click', '.editor-canvas, .editor-block, .editor-row, .editor-col, .editor-component', function(e) {
 		var $this = $(this);
-
 		currentAction.element = $this;
-
 		setSelected($this);
+		var tools = [];
 
-		var currentClass = '';
-		if ($this.hasClass('editor-block')) {
-			currentClass = 'block';
-		} else if($this.hasClass('editor-row')) {
-			currentClass = 'row';
-		} else if($this.hasClass('editor-col')) {
-			currentClass = 'col';
+		if ($this.data('tools')) {
+			tools = $this.data('tools').split(',');	
 		}
+		
+		console.log('Tools', tools);
 
-		$('.editor-tools ul.current').fadeOut('fast', function() {
-			$(this).removeClass('current');
-			$('.editor-tools ul.editor-tools-' + currentClass).fadeIn('fast', function() {
-				$(this).addClass('current');
-			});
-		});
+		clearInspector();
+		setInspectorTitle($this);
+		montaControls($this.data('controls'));
+
+		montaTools(tools);
+		// var currentClass = '';
+		// if ($this.hasClass('editor-block')) {
+		// 	currentClass = 'block';
+		// } else if($this.hasClass('editor-row')) {
+		// 	currentClass = 'row';
+		// } else if($this.hasClass('editor-col')) {
+		// 	currentClass = 'col';
+		// }
+
+		// $('.editor-tools ul.current').fadeOut('fast', function() {
+		// 	$(this).removeClass('current');
+		// 	$('.editor-tools ul.editor-tools-' + currentClass).fadeIn('fast', function() {
+		// 		$(this).addClass('current');
+		// 	});
+		// });
 
 		e.stopPropagation();
 	});
 
+	function montaTools(tools)
+	{
+		$('.editor-add').addClass('disabled');
+		
+		if (!tools) {
+			return;
+		}
+		
+		for (var i = 0; i < tools.length; i++) {
+			$('.editor-tool-add-' + tools[i]).removeClass('disabled');
+		}
+	}
 
 	function setSelected($this)
 	{
 		$('.editor-canvas div, .editor-canvas p').removeClass('editor-mouseover');
+		console.log('Set selected to', $this);
 		$this.addClass('editor-mouseover');
 	}
 
 	$('.editor-inspector').on('click', '.editor-inspector-control-btn-delete', function(e) {
-		console.log('Deletar');
-		currentAction.element.remove();
+		var toDelete = currentAction.element;
+
+		if (currentAction.element.hasClass('editor-col') && currentAction.element.siblings().length < 1) {
+			// Caso só tenha uma coluna deleta a linha inteira
+			toDelete = currentAction.element.parent();
+			// Não pode deletar se o bloco só possuir uma linha
+			if (toDelete.siblings().length < 1) {
+				alert('O Bloco deve ter no mínimo uma linha');
+				return;
+			}
+		}
+
+		// if (currentAction.element.hasClass('editor-row')) {
+		// 	if (currentAction.element.siblings().length < 1) {
+
+		// 	}
+		// }
+
+		toDelete.fadeOut('fast', function() {
+			$(this).remove();
+		});
 		clearInspector();
 	});
-	$('.editor-canvas').on('click', '.editor-col', function(e) {
-		var $this = $(this);
+	// $('.editor-canvas').on('click', '.editor-col', function(e) {
+	// 	var $this = $(this);
 
-		currentAction = {
-			element: $this,
-		};
-		console.log('Click Col');
-		e.stopPropagation();
-	});
-	$('.editor-canvas').on('click', '.editor-row', function(e) {
-		var $this = $(this);
+	// 	currentAction = {
+	// 		element: $this,
+	// 	};
+	// 	console.log('Click Col');
+	// 	e.stopPropagation();
+	// });
+	// $('.editor-canvas').on('click', '.editor-row', function(e) {
+	// 	var $this = $(this);
 
-		currentAction = {
-			element: $this,
-		};
-		console.log('Click Row');
+	// 	currentAction = {
+	// 		element: $this,
+	// 	};
+	// 	console.log('Click Row');
+	// 	e.stopPropagation();
+	// });
+
+	$('.editor-canvas').on('mouseover', '.editor-block, .editor-col', function(e) {
+		console.log('OVER', $(this).attr('data-original-title'));
+		
+		
+		$('[data-toggle="tooltip"]').tooltip('hide');
+		$(this).tooltip('toggle');
 		e.stopPropagation();
 	});
 
 	$('.editor-tools').on('click', '.editor-add', function() {
 		var $this = $(this);
 
+		if ($this.hasClass('disabled')) {
+			return;
+		}
+
 		currentAction.type = $this.data('action');
 		currentAction.editing = false;
 
-		$('#editor-modal-form')[0].reset();
-
+		// $('#editor-modal-form')[0].reset();
 
 		switch(currentAction.type) {
+			case 'addBlock':
+				addBlock();
+				break;
+			case 'addRow':
+				currentAction.element.children('.col').append(getRowHtml());
+				break;
 			case 'addText':
 				var $element = $(getTextHtml('Inserir o texto aqui!'));
 				currentAction.element.append($element);
@@ -173,6 +239,8 @@ $(function() {
 				setInspectorTitle(currentAction.element);
 				montaControls(currentAction.element.data('controls'));
 				setSelected(currentAction.element);
+
+				montaTools(currentAction.element.data('tools'));
 				break;
 			case 'addInput':
 				var value = $('#editor-modal-control-input').val();
@@ -195,32 +263,30 @@ $(function() {
 				currentAction.element.append(getDescriptionHtml($('#editor-modal-control-input').val()));
 				break;
 			case 'addCol':
-				var totalColsToAdd = $('#editor-modal-control-lines').val();
-				for (var i = 0; i < totalColsToAdd; i++) {
-					console.log("Adicionando Coluna");
-					currentAction.element.append(getColHtml());
-				}
+				currentAction.element.parent().append(getColHtml());
 				break;
 			default:
 				console.error('Ação não reconhecida', currentAction.type);
 				break;
 		}
 
-		switch(currentAction.type) {
-			case 'addBlock':
-				$('.editor-canvas').append(getBlockHtml());
-				break;
-			case 'addRow':
-				console.log('Aqui', currentAction);
-				currentAction.element.children('.col').append(getRowHtml());
-				break;
-			case 'addCol':
-				currentAction.element.append(getColHtml());
-				break;
-			default:
-				// openModalTextEdit();
-				break;
-		}
+		$('[data-toggle="tooltip"]').tooltip();
+
+	// 	// switch(currentAction.type) {
+	// 	// 	case 'addBlock':
+	// 	// 		$('.editor-canvas').append(getBlockHtml());
+	// 	// 		break;
+	// 	// 	case 'addRow':
+	// 	// 		console.log('Aqui', currentAction);
+	// 	// 		currentAction.element.children('.col').append(getRowHtml());
+	// 	// 		break;
+	// 	// 	case 'addCol':
+	// 	// 		currentAction.element.append(getColHtml());
+	// 	// 		break;
+	// 	// 	default:
+	// 	// 		// openModalTextEdit();
+	// 	// 		break;
+	// 	// }
 		
 	});
 
@@ -275,65 +341,60 @@ $(function() {
 		saveAction();
 	})
 
-	function saveAction() {
-		console.log(currentAction);
+	// function saveAction() {
+	// 	console.log(currentAction);
 
-		switch(currentAction.type) {
-			case 'addText':
-				var value = $('#editor-modal-control-textarea').val();
-				if (!currentAction.editing) {
-					currentAction.element.append('<p class="editor-edit-component" data-action="addText">' +value+ '</p>');
-				} else {
-					currentAction.element.text(value);
-				}
+	// 	switch(currentAction.type) {
+	// 		case 'addText':
+	// 			var value = $('#editor-modal-control-textarea').val();
+	// 			if (!currentAction.editing) {
+	// 				currentAction.element.append('<p class="editor-edit-component" data-action="addText">' +value+ '</p>');
+	// 			} else {
+	// 				currentAction.element.text(value);
+	// 			}
 				
-				break;
-			case 'addInput':
-				var value = $('#editor-modal-control-input').val();
-				var valueQtd = $('#editor-modal-control-qtd').val();
+	// 			break;
+	// 		case 'addInput':
+	// 			var value = $('#editor-modal-control-input').val();
+	// 			var valueQtd = $('#editor-modal-control-qtd').val();
 
-				if (!currentAction.editing) {
-					currentAction.element.append(getInputHtml(value));
-					currentAction.element.append(getLinesHtml(valueQtd));
-				} else {
-					currentAction.element.text(value);
-				}
-				break;
-			case 'addLines':
-				currentAction.element.append(getLinesHtml($('#editor-modal-control-lines').val()));
-				break;
-			case 'addList':
-				currentAction.element.append(getListHtml($('input[name^=editor-control-list]').serializeArray(), $('#editor-modal-control-list-type').val()));
-				break;
-			case 'addDescription':
-				currentAction.element.append(getDescriptionHtml($('#editor-modal-control-input').val()));
-				break;
-			case 'addCol':
-				var totalColsToAdd = $('#editor-modal-control-lines').val();
-				for (var i = 0; i < totalColsToAdd; i++) {
-					console.log("Adicionando Coluna");
-					currentAction.element.append(getColHtml());
-				}
-				break;
-			default:
-				console.error('Ação não reconhecida', currentAction.type);
-				break;
-		}
+	// 			if (!currentAction.editing) {
+	// 				currentAction.element.append(getInputHtml(value));
+	// 				currentAction.element.append(getLinesHtml(valueQtd));
+	// 			} else {
+	// 				currentAction.element.text(value);
+	// 			}
+	// 			break;
+	// 		case 'addLines':
+	// 			currentAction.element.append(getLinesHtml($('#editor-modal-control-lines').val()));
+	// 			break;
+	// 		case 'addList':
+	// 			currentAction.element.append(getListHtml($('input[name^=editor-control-list]').serializeArray(), $('#editor-modal-control-list-type').val()));
+	// 			break;
+	// 		case 'addDescription':
+	// 			currentAction.element.append(getDescriptionHtml($('#editor-modal-control-input').val()));
+	// 			break;
+	// 		case 'addCol':
+	// 			console.log('Aqui adicinando coluina');
+	// 			var totalColsToAdd = $('#editor-modal-control-lines').val();
+	// 			for (var i = 0; i < totalColsToAdd; i++) {
+	// 				console.log("Adicionando Coluna");
+	// 				currentAction.element.append(getColHtml());
+	// 			}
+	// 			break;
+	// 		default:
+	// 			console.error('Ação não reconhecida', currentAction.type);
+	// 			break;
+	// 	}
 		
-		$('#editor-modal-group-control-list').html('');
-		$('#modal-tools').modal('toggle');
-	}
+	// 	$('#editor-modal-group-control-list').html('');
+	// 	$('#modal-tools').modal('toggle');
+	// }
 
 	function getBlockHtml() {
 		return `
-			<div class="editor-block editor-parent row" title="Block">
+			<div class="editor-block row editor-component" data-tools="row" data-controls="delete" data-toggle="tooltip" title="Bloco">
 				<div class="col">
-					<div class="editor-toolbox" style="display: none;">
-						<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Adicionar ao bloco</button>
-						<div class="dropdown-menu">
-							<a href="#" class="editor-add-parent dropdown-item" data-action="addRow">Linha</a>
-						</div>
-					</div>
 					${getRowHtml()}
 				</div>
 			</div>
@@ -342,11 +403,7 @@ $(function() {
 
 	function getRowHtml() {
 		return `
-			<div class="editor-row row editor-component" data-controls="delete" title="Linha">
-				<button type="button" class="btn btn-default dropdown-toggle" style="display: none;" data-toggle="dropdown">Adicionar a linha</button>
-				<div class="dropdown-menu">
-					<a href="#" class="editor-add dropdown-item" data-action="addCol">Coluna</a>
-				</div>
+			<div class="editor-row row editor-component" data-tools="col" data-controls="delete" data-toggle="tooltip" title="Linha">
 				${getColHtml()}
 			</div>
 		`;
@@ -354,20 +411,15 @@ $(function() {
 
 	function getColHtml() {
 		return `
-			<div class="editor-col col editor-component" data-controls="delete" title="Coluna">
-				<button type="button" class="dropdown-toggle btn btn-primary" style="display: none;" data-toggle="dropdown">Adicionar a coluna</button>
-				<div class="dropdown-menu hidden">
-					<a href="#!" class="editor-add dropdown-item" data-action="addText">Texto</a>
-					<a href="#!" class="editor-add dropdown-item" data-action="addInput">Entrada</a>
-					<a href="#!" class="editor-add dropdown-item" data-action="addLines">Linhas</a>
-					<a href="#!" class="editor-add dropdown-item" data-action="addList">Lista</a>
-					<a href="#!" class="editor-add dropdown-item" data-action="addDescription">Observação</a>
-				</div>
+			<div class="editor-col col editor-component" data-tools="col,text" data-controls="delete" data-toggle="tooltip" title="Coluna">
 			</div>
 		`;
 	}
 
 	function montaControls(controlsString){
+		if (!controlsString) {
+			return;
+		}
 		var controls = controlsString.split(',');
 		var controlsHtml = '';
 		for (var i = 0; i < controls.length; i++) {

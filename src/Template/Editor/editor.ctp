@@ -6,38 +6,39 @@
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-3 editor-tools">
-			<ul class="nav flex-column editor-tools-block current">
+			<ul class="nav flex-column">
 				<li class="nav-item">
-					<a href="#!" class="editor-add nav-link" data-action="addRow">Row</a>
+					<a href="#!" class="editor-add editor-tool-add-block nav-link" data-action="addBlock">Bloco</a>
 				</li>
-			</ul>
-			<ul class="nav flex-column editor-tools-row">
 				<li class="nav-item">
-					<a href="#!" class="editor-add nav-link" data-action="addCol">Coluna</a>
+					<a href="#!" class="editor-add editor-tool-add-row nav-link" data-action="addRow">Linha</a>
 				</li>
-			</ul>
-			<ul class="nav flex-column editor-tools-col">
 				<li class="nav-item">
-					<a href="#!" class="editor-add nav-link" data-action="addText">Texto</a>
-					<a href="#!" class="editor-add nav-link" data-action="addList">Lista</a>
-					<a href="#!" class="editor-add nav-link" data-action="addInput">Entrada</a>
-					<a href="#!" class="editor-add nav-link" data-action="addLines">Linhas</a>
-					<a href="#!" class="editor-add nav-link" data-action="addDescription">Observação</a>
+					<a href="#!" class="editor-add editor-tool-add-text nav-link" data-action="addText">Texto</a>
+				</li>
+				<li class="nav-item">
+					<a href="#!" class="editor-add editor-tool-add-col nav-link" data-action="addCol">Coluna</a>
 				</li>
 			</ul>
 		</div>
-		<div class="col-6 editor-canvas">
-			<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Adicionar ao projeto</button>
-			<div class='dropdown-menu'>
-				<a href="#" class="editor-add-parent dropdown-item" data-action="addBlock">Bloco</a>
+		<div class="col-6">
+			<div class="">
+				<div style="width: 10px; height: 10px; background-color: green"></div>
+				Bloco
+				<div style="width: 10px; height: 10px; background-color: green"></div>
+				Linha
+				<div style="width: 10px; height: 10px; background-color: green"></div>
+				Coluna
 			</div>
+
+			<div class="container-fluid editor-canvas" data-tools="block"></div>
 		</div>
 		<div class="col-3 editor-inspector">
 		</div>
 	</div>
 </div>
 
-<div class="modal fade" tabindex="-1" role="dialog" id="modal-tools">
+<!-- <div class="modal fade" tabindex="-1" role="dialog" id="modal-tools">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -83,7 +84,7 @@
     </div>
   </div>
 </div>
-
+ -->
 <!-- Modal Structure -->
 <!-- <div id="modal1" class="modal">
 <div class="modal-content">
