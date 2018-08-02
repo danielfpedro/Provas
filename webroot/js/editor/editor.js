@@ -71,6 +71,33 @@ $(function() {
 		currentAction.element.text($(this).val());
 	});
 
+	$('.editor-inspector').on('input', '.editor-inspector-control-pautas-qtd', function(e) {
+		var $this = $(this);
+		var totalPautas = currentAction.element.children().length;
+		var desired = parseInt($this.val());
+		var dif = totalPautas - desired;
+
+		$this.siblings('label').find('span').text($this.val());
+
+		if (dif < 0) {
+			for (var i = 0; i < Math.abs(dif); i++) {
+				currentAction.element.append(getPautaHtml());
+			}
+		} else if (dif > 0) {
+			for (var i = 0; i < Math.abs(dif); i++) {
+				console.log('Aqui', currentAction.element.children().last());
+
+				currentAction.element.children().last().remove();
+			}
+		}
+	});
+
+	function getPautaHtml() {
+		return `
+			<div class="editor-line"></div>
+		`;
+	}
+
 	function getControlTextHtml(value) {
 		var id = getRandomId();
 		return `
@@ -203,7 +230,7 @@ $(function() {
 	// 	e.stopPropagation();
 	// });
 
-	$('.editor-canvas').on('mouseover', '.editor-block, .editor-col', function(e) {
+	$('.editor-canvas').on('mouseover', '.editor-block, .editor-col, .editor-component', function(e) {
 		console.log('OVER', $(this).attr('data-original-title'));
 		
 		
@@ -264,6 +291,9 @@ $(function() {
 				break;
 			case 'addCol':
 				currentAction.element.parent().append(getColHtml());
+				break;
+			case 'addPautas':
+				currentAction.element.append(getPautasHtml());
 				break;
 			default:
 				console.error('Ação não reconhecida', currentAction.type);
@@ -411,7 +441,7 @@ $(function() {
 
 	function getColHtml() {
 		return `
-			<div class="editor-col col editor-component" data-tools="col,text" data-controls="delete" data-toggle="tooltip" title="Coluna">
+			<div class="editor-col col editor-component" data-tools="col,text,pautas" data-controls="delete" data-toggle="tooltip" title="Coluna">
 			</div>
 		`;
 	}
@@ -431,6 +461,9 @@ $(function() {
 				case 'delete':
 					controlsHtml += getControlDeleteHtml();
 					break;
+				case 'pautasQtd':
+					controlsHtml += getControlPautasQtdHtml();
+					break;
 				default:
 					console.error('Control não recohecido');
 					break;
@@ -439,6 +472,16 @@ $(function() {
 
 		$('.editor-inspector').append(controlsHtml);
 		$('.editor-inspector').find('input, textarea').focus();
+	}
+
+	function getControlPautasQtdHtml() {
+		var randomId = getRandomId();
+		return `
+		  <div class="form-group">
+		    <label for="${randomId}">Quantidade de Pautas (<span>1</span>)</label>
+		    <input type="range" class="form-control-range editor-inspector-control-pautas-qtd" id="${randomId}" min="1" max="100" step="1" value="1">
+		  </div>
+		`;
 	}
 
 	function getControlDeleteHtml() {
@@ -451,9 +494,17 @@ $(function() {
 		return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(2, 10);
 	}
 
+	function getPautasHtml() {
+		return `
+			<div class="editor-component" data-controls="pautasQtd,delete" data-toggle="tooltip" title="Pautas">
+				<div class="editor-line"></div>
+			</div>
+		`;
+	}
+
 	function getTextHtml(value) {
 		return `
-			<p title="Texto" id="${getRandomId()}" class="editor-component" data-controls="text,delete" autofocus="true">${value}</p>
+			<p class="editor-component" data-controls="text,delete" data-toggle="tooltip" title="Texto">${value}</p>
 		`;
 	}
 

@@ -17,7 +17,10 @@
 					<a href="#!" class="editor-add editor-tool-add-text nav-link" data-action="addText">Texto</a>
 				</li>
 				<li class="nav-item">
-					<a href="#!" class="editor-add editor-tool-add-col nav-link" data-action="addCol">Coluna</a>
+					<a href="#!" class="editor-add editor-tool-add-col nav-link" data-action="addCol">Coluna ao lado</a>
+				</li>
+				<li class="nav-item">
+					<a href="#!" class="editor-add editor-tool-add-pautas nav-link" data-action="addPautas">Pautas</a>
 				</li>
 			</ul>
 		</div>
@@ -25,8 +28,6 @@
 			<div class="">
 				<div style="width: 10px; height: 10px; background-color: green"></div>
 				Bloco
-				<div style="width: 10px; height: 10px; background-color: green"></div>
-				Linha
 				<div style="width: 10px; height: 10px; background-color: green"></div>
 				Coluna
 			</div>
